@@ -223,21 +223,35 @@ class Player:
                 self.table[next_board] - self.table[board]
             )
 
-    def simulate(self):
+    def simulate(self, verbose: bool=False):
         self.reset()
+        if verbose:
+            print(self.board)
+
         while not self.board.is_finished:
             self.play()
-            print(self.board)
+            if verbose:
+                print(self.board)
 
 if __name__ == "__main__":
     board = Board(first=(0, 0))
     print(board)
     print(board.valid_moves)
 
-    board.move((1, 2))
+    board.move(next(iter(board.valid_moves)))
     print(board)
 
     player = Player()
     player.simulate()
     print(player.table.values)
+
+    import pickle
+    player = Player()
+    for i in range(int(1e10)):
+        player.simulate()
+        print(i, len(player.table.values), len(set(player.table.values.values())))
+
+        if player.board.is_successful:
+            with open(f"{i}.pickle", "wb") as f:
+                pickle.dump(player, f)
 
