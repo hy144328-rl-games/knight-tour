@@ -14,6 +14,22 @@ class Board:
         )
     }
 
+    def position_map(
+        zero: str,
+        one: str,
+        two: str,
+    ) -> typing.Callable:
+        def func(self, i: int, j: int):
+            if self[i, j]:
+                if self.current == (i, j):
+                    return two
+                else:
+                    return one
+            else:
+                return zero
+
+        return func
+
     def __init__(
         self,
         no_rows: int=8,
@@ -38,16 +54,19 @@ class Board:
             + "\n"
         )
 
+
+    repr_map = position_map(0, 1, 2)
+
     def __repr__(self) -> str:
         return "".join(
             [
-                1
-                if self[i, j]
-                else 0
+                self.repr_map(i, j)
                 for i in range(self.no_rows)
                 for j in range(self.no_cols)
             ]
         )
+
+    str_map = position_map(" ", "o", "x")
 
     def __str__(self) -> str:
         res = "\n"
@@ -56,7 +75,7 @@ class Board:
         for i in range(self.no_rows):
             ls_row = [
                 self.no_pad * " "
-                + ("x" if self[i, j] else " ")
+                + self.str_map(i, j)
                 + self.no_pad * " "
                 for j in range(self.no_cols)
             ]
