@@ -76,11 +76,17 @@ class Board:
         self.fields[idx] = val
 
     def set_knight(self, idx: tuple[int, int]):
+        assert not self[idx]
         self[idx] = True
         self.current = idx
 
     def add(self, move: tuple[int, int]) -> tuple[int, int]:
         return (self.current[0] + move[0], self.current[1] + move[1])
+
+    def move(self, move: tuple[int, int]) -> tuple[int, int]:
+        assert self.is_valid(move)
+        next_position = self.add(move)
+        self.set_knight(next_position)
 
     def is_valid(self, move: tuple[int, int]) -> bool:
         next_position = self.add(move)
@@ -105,4 +111,7 @@ if __name__ == "__main__":
     board = Board(first=(0, 0))
     print(board)
     print(board.valid_moves)
+
+    board.move((1, 2))
+    print(board)
 
