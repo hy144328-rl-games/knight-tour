@@ -3,6 +3,7 @@
 import collections
 import itertools
 import numpy as np
+import random
 import typing
 
 class Board:
@@ -56,7 +57,7 @@ class Board:
         )
 
 
-    repr_map = position_map(0, 1, 2)
+    repr_map = position_map("0", "1", "2")
 
     def __repr__(self) -> str:
         return "".join(
@@ -168,6 +169,7 @@ class ValueTable:
 
 class Player:
     def __init__(self):
+        self.alpha: float = 0.1
         self.board: Board = Board()
         self.table: ValueTable = ValueTable()
 
@@ -175,8 +177,57 @@ class Player:
         self.board.reset()
         self.board.set_knight((0, 0))
 
+    def valid_moves(self) -> list[tuple[int, int]]:
+        return sorted(
+            self.board.valid_moves,
+            key = lambda move: 1.1 * move[0] + move[1],
+        )
+
+    def best_move(self, moves) -> tuple[int, int]:
+        return max(
+            moves,
+            key = lambda move: self.table.get(
+                self.board,
+                move,
+            ),
+        )
+
+    def pick_move(self, moves):
+        weights = [
+            self.table.get(
+                self.board,
+                move,
+            )
+            for move in moves
+        ]
+
+        return random.choices(moves, weights)[0]
+
+    def play(self):
+        valid_moves = self.valid_moves()
+        best_move = self.best_move(valid_moves)
+        move = self.pick_move(valid_moves)
+
+        board = self.board.copy()
+        self.board.move(move)
+        next_board = self.board.copy()
+
+        if self.board.is_finished:
+            if self.board.is_successful:
+                self.table[self.board] = 1.0
+            else:
+                self.table[self.board] = 0.0
+
+        if self.table.get(board, move) == self.table.get(board, best_move):
+            self.table[board] += self.alpha * (
+                self.table[next_board] - self.table[board]
+            )
+
     def simulate(self):
-        ...
+        self.reset()
+        while not self.board.is_finished:
+            self.play()
+            print(self.board)
 
 if __name__ == "__main__":
     board = Board(first=(0, 0))
@@ -185,4 +236,8 @@ if __name__ == "__main__":
 
     board.move((1, 2))
     print(board)
+
+    player = Player()
+    player.simulate()
+    print(player.table.values)
 
