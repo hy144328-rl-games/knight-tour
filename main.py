@@ -126,6 +126,14 @@ class Board:
             if self.is_valid(move_it)
         }
 
+    @property
+    def is_finished(self) -> bool:
+        return len(self.valid_moves) == 0
+
+    @property
+    def is_successful(self) -> bool:
+        return np.sum(self.fields == 0) == 0
+
 if __name__ == "__main__":
     board = Board(first=(0, 0))
     print(board)
