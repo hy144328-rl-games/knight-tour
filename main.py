@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import itertools
 import numpy as np
 import typing
@@ -133,6 +134,49 @@ class Board:
     @property
     def is_successful(self) -> bool:
         return np.sum(self.fields == 0) == 0
+
+    def copy(self) -> "Board":
+        board = Board()
+
+        board.fields[:, :] = self.fields
+        board.current = self.current
+
+        return board
+
+    def reset(self):
+        self.fields[:, :] = False
+        self.current = None
+
+class ValueTable:
+    def __init__(self):
+        self.values: dict[str, float] = collections.defaultdict(lambda: 0.5)
+
+    def __getitem__(self, board: Board) -> float:
+        return self.values[repr(board)]
+
+    def __setitem__(self, board: Board, val: float):
+        self.values[repr(board)] = val
+
+    def get(
+        self,
+        board: Board,
+        move: tuple[int, int],
+    ) -> float:
+        board = board.copy()
+        board.move(move)
+        return self[board]
+
+class Player:
+    def __init__(self):
+        self.board: Board = Board()
+        self.table: ValueTable = ValueTable()
+
+    def reset(self):
+        self.board.reset()
+        self.board.set_knight((0, 0))
+
+    def simulate(self):
+        ...
 
 if __name__ == "__main__":
     board = Board(first=(0, 0))
