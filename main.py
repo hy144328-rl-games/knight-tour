@@ -134,7 +134,7 @@ class Board:
 
     @property
     def is_successful(self) -> bool:
-        return np.sum(self.fields == 0) == 0
+        return np.sum(self.fields) == self.no_rows * self.no_cols
 
     def copy(self) -> "Board":
         board = Board(self.no_rows, self.no_cols)
@@ -150,10 +150,20 @@ class Board:
 
 class ValueTable:
     def __init__(self):
-        self.values: dict[str, float] = collections.defaultdict(lambda: 0.5)
+        self.values: dict[str, float] = {}
 
     def __getitem__(self, board: Board) -> float:
-        return self.values[repr(board)]
+        repr_board = repr(board)
+
+        if repr_board not in self.values:
+            if board.is_finished and not board.is_successful:
+                self.values[repr_board] = 0.0
+            else:
+                self.values[repr_board] = len(
+                    [c for c in repr_board if c != "0"]
+                )
+
+        return self.values[repr_board]
 
     def __setitem__(self, board: Board, val: float):
         self.values[repr(board)] = val
@@ -215,12 +225,6 @@ class Player:
         self.board.move(move)
         next_board = self.board.copy()
 
-        if self.board.is_finished:
-            if self.board.is_successful:
-                self.table[self.board] = 1.0
-            else:
-                self.table[self.board] = 0.0
-
         if self.table.get(board, move) == self.table.get(board, best_move):
             self.table[board] += self.alpha * (
                 self.table[next_board] - self.table[board]
@@ -237,7 +241,7 @@ class Player:
                 print(self.board)
 
 if __name__ == "__main__":
-    board = Board(6, 6, first=(0, 0))
+    board = Board(5, 5, first=(0, 0))
     print(board)
     print(board.valid_moves)
 
@@ -250,7 +254,7 @@ if __name__ == "__main__":
 
     import dill
 
-    for i in range(int(1e10)):
+    for i in range(int(1e6)):
         player.simulate()
 
         if player.board.is_successful:
@@ -258,9 +262,10 @@ if __name__ == "__main__":
             print({
                 board: value
                 for board, value in player.table.values.items()
-                if value > 0.5
+                if value > len(board) - 1
             })
 
+        if i % int(1e5) == 0:
             with open(f"{i}.pickle", "wb") as f:
                 dill.dump(player.table.values, f)
 
