@@ -137,7 +137,7 @@ class Board:
         return np.sum(self.fields == 0) == 0
 
     def copy(self) -> "Board":
-        board = Board()
+        board = Board(self.no_rows, self.no_cols)
 
         board.fields[:, :] = self.fields
         board.current = self.current
@@ -200,6 +200,9 @@ class Player:
             )
             for move in moves
         ]
+
+        if all(weight_it == 0.0 for weight_it in weights):
+            return self.best_move(moves)
 
         return random.choices(moves, weights)[0]
 
