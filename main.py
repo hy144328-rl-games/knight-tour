@@ -255,6 +255,12 @@ if __name__ == "__main__":
 
         if player.board.is_successful:
             print(i, len(player.table.values), len(set(player.table.values.values())))
+            print({
+                board: value
+                for board, value in player.table.values.items()
+                if value > 0.5
+            })
+
             with open(f"{i}.pickle", "wb") as f:
                 dill.dump(player.table.values, f)
 
