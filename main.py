@@ -168,9 +168,9 @@ class ValueTable:
         return self[board]
 
 class Player:
-    def __init__(self):
-        self.alpha: float = 0.1
-        self.board: Board = Board()
+    def __init__(self, board: Board, alpha: float=0.1):
+        self.alpha: float = alpha
+        self.board: Board = board
         self.table: ValueTable = ValueTable()
 
     def reset(self):
@@ -237,24 +237,24 @@ class Player:
                 print(self.board)
 
 if __name__ == "__main__":
-    board = Board(first=(0, 0))
+    board = Board(6, 6, first=(0, 0))
     print(board)
     print(board.valid_moves)
 
     board.move(next(iter(board.valid_moves)))
     print(board)
 
-    player = Player()
+    player = Player(board)
     player.simulate()
     print(player.table.values)
 
-    import pickle
-    player = Player()
+    import dill
+
     for i in range(int(1e10)):
         player.simulate()
-        print(i, len(player.table.values), len(set(player.table.values.values())))
 
         if player.board.is_successful:
+            print(i, len(player.table.values), len(set(player.table.values.values())))
             with open(f"{i}.pickle", "wb") as f:
-                pickle.dump(player, f)
+                dill.dump(player.table.values, f)
 
